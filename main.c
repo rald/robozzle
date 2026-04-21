@@ -424,6 +424,15 @@ void Run_Input() {
 
             if((board1->cells[board1->cy*board1->w+board1->cx]&0x04)>>2) {
                 board1->cells[board1->cy*board1->w+board1->cx]&=0x03;
+                board1->g--;
+                if(board1->g<=0) {
+                    getmaxyx(stdscr,maxy,maxx);
+                    attron(COLOR_PAIR(1));
+                    move(maxy-1,0); printw("GAME OVER");
+                    move(code->cy+code->y+1,code->cx+code->x+1);
+                    gamestate=GAME_STATE_END;
+                    return;
+                }
             }           
         
             if(     (code->colors[code->fn*code->w+code->ip] == 
