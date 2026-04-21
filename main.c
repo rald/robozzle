@@ -397,6 +397,20 @@ void Code_Input() {
 
 void next() {
     int k;
+
+    if((board1->cells[board1->cy*board1->w+board1->cx]&0x04)>>2) {
+        board1->cells[board1->cy*board1->w+board1->cx]&=0x03;
+        board1->g--;
+        if(board1->g<=0) {
+            getmaxyx(stdscr,maxy,maxx);
+            attron(COLOR_PAIR(1));
+            move(maxy-1,0); printw("GAME OVER! PRESS ENTER TO CONTINUE...");
+            move(code->cy+code->y+1,code->cx+code->x+1);
+            gamestate=GAME_STATE_END;
+            return;
+        }
+    }           
+
     code->ip++; 
     if(code->ip>code->w-1) {
         code->ip=code->w-1;
@@ -592,6 +606,7 @@ void Run_Input() {
             } else {
                 next();
             }
+
                     
             move(code->fn+code->y+1,code->ip+code->x+1);
 
@@ -613,8 +628,10 @@ void End_Input() {
             Board_Free(board0);
 
             board0=Board_New(levelfp);
+
             if(!board0) {
-                fprintf(stderr,"Error loading file \"LEVELS.TXT\".");
+                fclose(levelfp);
+                clear();
                 exit(1);
             }
 
@@ -628,6 +645,8 @@ void End_Input() {
             attron(COLOR_PAIR(1));
             move(maxy-1,0); printw("CODE");
             move(code->cy+code->x+1,code->cx+code->x+1);
+            
+            gamestate=GAME_STATE_CODE;
         }
     }    
 }
@@ -648,6 +667,7 @@ int main(void) {
     board0=Board_New(levelfp);
     
     if(!board0) {
+        fclose(levelfp);
         fprintf(stderr,"Error loading file \"LEVELS.TXT\".");
         exit(1);
     }
