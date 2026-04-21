@@ -632,6 +632,11 @@ void End_Input() {
             if(!board0) {
                 fclose(levelfp);
                 clear();
+                attron(COLOR_PAIR(1));
+                printw("GAME OVER");
+                refresh();
+                getchar();
+                cleanup();
                 exit(1);
             }
 
