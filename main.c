@@ -36,6 +36,8 @@ Board *board0=NULL;
 Board *board1=NULL;
 Code *code=NULL;
 
+FILE *levelfp=NULL;
+
 #define CSTK_MAX 100
 int cstk[CSTK_MAX];
 int csp=CSTK_MAX;
@@ -159,15 +161,22 @@ char *decode(Board *board,char *e) {
     return cells;
 }
 
-Board *Board_New(const char *filename) {
+Board *Board_New(FILE *fp) {
     Board *board=malloc(sizeof(*board));
-    char *level=randline(filename);
     char *enc=NULL;
     char *dec=NULL;
     int i,j,k;
     int color;
     bool star;
 
+    char *level=NULL;
+    size_t llen=0;
+    ssize_t rlen=0;
+    
+    rlen=getline(&level,&llen,fp);
+    
+    if(rlen==-1) return NULL;
+       
     if(!board) return NULL;
     if(!level) return NULL;
 
@@ -186,6 +195,8 @@ Board *Board_New(const char *filename) {
             if((board->cells[k++]-'0') & 0x04) board->g++;
         }
     }
+
+    free(level);
 
     return board;
 }
@@ -428,7 +439,7 @@ void Run_Input() {
                 if(board1->g<=0) {
                     getmaxyx(stdscr,maxy,maxx);
                     attron(COLOR_PAIR(1));
-                    move(maxy-1,0); printw("GAME OVER");
+                    move(maxy-1,0); printw("GAME OVER! PRESS ENTER TO CONTINUE...");
                     move(code->cy+code->y+1,code->cx+code->x+1);
                     gamestate=GAME_STATE_END;
                     return;
@@ -597,6 +608,27 @@ void End_Input() {
         key=getch();
         if(key==0) key=getch()+256;        
         if(key==27) quit=true;
+        if(key==10) {
+            getmaxyx(stdscr,maxy,maxx);
+            Board_Free(board0);
+
+            board0=Board_New(levelfp);
+            if(!board0) {
+                fprintf(stderr,"Error loading file \"LEVELS.TXT\".");
+                exit(1);
+            }
+
+            board0->x=maxx-board0->w;
+            board0->y=0;
+            board1=Board_Copy(board0);
+            code=Code_New(0,0);
+            clear();
+            Board_Draw(board1);
+            Code_Draw(code);
+            attron(COLOR_PAIR(1));
+            move(maxy-1,0); printw("CODE");
+            move(code->cy+code->x+1,code->cx+code->x+1);
+        }
     }    
 }
 
@@ -606,7 +638,20 @@ int main(void) {
 
     getmaxyx(stdscr,maxy,maxx);
 
-    board0=Board_New("LEVELS.TXT");
+    levelfp=fopen("LEVELS.TXT","r");
+
+    if(!levelfp) {
+        fprintf(stderr,"Error opening file \"LEVELS.TXT\".");
+        exit(1);
+    }
+    
+    board0=Board_New(levelfp);
+    
+    if(!board0) {
+        fprintf(stderr,"Error loading file \"LEVELS.TXT\".");
+        exit(1);
+    }
+    
     board0->x=maxx-board0->w;
     board0->y=0;
     
@@ -614,6 +659,7 @@ int main(void) {
 
     code=Code_New(0,0);
 
+    clear();
     Board_Draw(board1);
     Code_Draw(code);
     
@@ -635,6 +681,3 @@ int main(void) {
 
     return 0;
 }
-
-
-
