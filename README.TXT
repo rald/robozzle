@@ -13,6 +13,7 @@ g   on green
 b   on blue
 0-9 function call
 X   return
+.   erase
 
 ARROWS  move cursor
 TAB     switch CODE/RUN

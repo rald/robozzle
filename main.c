@@ -382,7 +382,7 @@ void Code_Input() {
             code->fn=0;
             getmaxyx(stdscr,maxy,maxx);
             attron(COLOR_PAIR(1));
-            move(maxy-1,0); printw("RUN ");
+            move(maxy-1,0); printw("RUN. PRESS SPACE TO STEP"); clrtoeol();
             move(code->fn+code->y+1,code->ip+code->x+1);
             gamestate=GAME_STATE_RUN;
             break;
@@ -395,8 +395,23 @@ void Code_Input() {
     }
 }
 
+void gameover() {
+    getmaxyx(stdscr,maxy,maxx);
+    move(maxy-1,0); 
+    attron(COLOR_PAIR(1));
+    printw("GAME OVER. PRESS ENTER KEY..."); clrtoeol();
+    refresh();
+    while(getch()!=10);
+    cleanup();
+    exit(1);
+}
+
 void next() {
     int k;
+
+    if(board1->cells[board1->cy*board1->w+board1->cx]=='0') {
+        gameover();
+    }
 
     if((board1->cells[board1->cy*board1->w+board1->cx]&0x04)>>2) {
         board1->cells[board1->cy*board1->w+board1->cx]&=0x03;
@@ -404,8 +419,7 @@ void next() {
         if(board1->g<=0) {
             getmaxyx(stdscr,maxy,maxx);
             attron(COLOR_PAIR(1));
-            move(maxy-1,0); printw("GAME OVER! PRESS ENTER TO CONTINUE...");
-            move(code->cy+code->y+1,code->cx+code->x+1);
+            move(maxy-1,0); printw("GAME COMPLETED. PRESS ENTER KEY..."); clrtoeol();
             gamestate=GAME_STATE_END;
             return;
         }
@@ -417,7 +431,7 @@ void next() {
         if(code->fn==0) {
             getmaxyx(stdscr,maxy,maxx);
             attron(COLOR_PAIR(1));
-            move(maxy-1,0); printw("GAME OVER");
+            move(maxy-1,0); printw("GAME OVER"); clrtoeol();
             move(code->cy+code->x+1,code->cx+code->x+1);
             gamestate=GAME_STATE_END; 
         } else {
@@ -441,11 +455,16 @@ void Run_Input() {
         case 9:
             getmaxyx(stdscr,maxy,maxx);
             attron(COLOR_PAIR(1));
-            move(maxy-1,0); printw("CODE");
+            move(maxy-1,0); printw("CODE"); clrtoeol();
             move(code->cy+code->y+1,code->cx+code->x+1);
             gamestate=GAME_STATE_CODE;            
             break;
         case 32:
+
+            if(board1->cells[board1->cy*board1->w+board1->cx]=='0') {
+                gameover();
+                return;            
+            }
 
             if((board1->cells[board1->cy*board1->w+board1->cx]&0x04)>>2) {
                 board1->cells[board1->cy*board1->w+board1->cx]&=0x03;
@@ -453,8 +472,7 @@ void Run_Input() {
                 if(board1->g<=0) {
                     getmaxyx(stdscr,maxy,maxx);
                     attron(COLOR_PAIR(1));
-                    move(maxy-1,0); printw("GAME OVER! PRESS ENTER TO CONTINUE...");
-                    move(code->cy+code->y+1,code->cx+code->x+1);
+                    move(maxy-1,0); printw("GAME COMPLETED. PRESS ENTER KEY"); clrtoeol();
                     gamestate=GAME_STATE_END;
                     return;
                 }
@@ -482,10 +500,10 @@ void Run_Input() {
                     }
                     
                     switch(board1->d) {
-                    case 0: if(board1->cy>0)           board1->cy--; next(); break;
-                    case 1: if(board1->cx<board1->w-1) board1->cx++; next(); break;
-                    case 2: if(board1->cy<board1->h-1) board1->cy++; next(); break;
-                    case 3: if(board1->cx>0)           board1->cx--; next(); break;
+                    case 0: if(board1->cy>0)           board1->cy--; else {gameover(); return; } next(); break;
+                    case 1: if(board1->cx<board1->w-1) board1->cx++; else {gameover(); return; } next(); break;
+                    case 2: if(board1->cy<board1->h-1) board1->cy++; else {gameover(); return; } next(); break;
+                    case 3: if(board1->cx>0)           board1->cx--; else {gameover(); return; } next(); break;
                     default: break;
                     }
                     
@@ -549,12 +567,14 @@ void Run_Input() {
                     } else {
                         addch(' ');
                     }
+                    
+                    next();
 
                     break;
 
                 case 'G': 
 
-                    board1->cells[board1->cy*board1->w+board1->cx]=(board1->cells[board1->cy*board1->w+board1->cx]&0x04)|0x01; 
+                    board1->cells[board1->cy*board1->w+board1->cx]=(board1->cells[board1->cy*board1->w+board1->cx]&0x04)|0x02; 
 
                     move(board1->cy+board1->y,board1->cx+board1->x);
                     attron(COLOR_PAIR(((board1->cells[board1->cy*board1->w+board1->cx]-'0') & 0x03) + 5));                    
@@ -566,12 +586,14 @@ void Run_Input() {
                     } else {
                         addch(' ');
                     }
+
+                    next();
 
                     break;
 
                 case 'B': 
 
-                    board1->cells[board1->cy*board1->w+board1->cx]=(board1->cells[board1->cy*board1->w+board1->cx]&0x04)|0x01; 
+                    board1->cells[board1->cy*board1->w+board1->cx]=(board1->cells[board1->cy*board1->w+board1->cx]&0x04)|0x03; 
 
                     move(board1->cy+board1->y,board1->cx+board1->x);
                     attron(COLOR_PAIR(((board1->cells[board1->cy*board1->w+board1->cx]-'0') & 0x03) + 5));                    
@@ -583,6 +605,8 @@ void Run_Input() {
                     } else {
                         addch(' ');
                     }
+
+                    next();
 
                     break;
                     
@@ -599,6 +623,9 @@ void Run_Input() {
                     k=pop();
                     code->fn=k/code->w;
                     code->ip=k%code->w;
+
+                    next();
+
                     break;
 
                 default: break;
@@ -606,8 +633,7 @@ void Run_Input() {
             } else {
                 next();
             }
-
-                    
+      
             move(code->fn+code->y+1,code->ip+code->x+1);
 
             break;
@@ -631,7 +657,8 @@ void End_Input() {
 
             if(!board0) {
                 fclose(levelfp);
-                clear();
+                getmaxyx(stdscr,maxy,maxx);
+                move(maxy-1,0);
                 attron(COLOR_PAIR(1));
                 printw("GAME OVER");
                 refresh();
@@ -648,7 +675,7 @@ void End_Input() {
             Board_Draw(board1);
             Code_Draw(code);
             attron(COLOR_PAIR(1));
-            move(maxy-1,0); printw("CODE");
+            move(maxy-1,0); printw("CODE"); clrtoeol();
             move(code->cy+code->x+1,code->cx+code->x+1);
             
             gamestate=GAME_STATE_CODE;
