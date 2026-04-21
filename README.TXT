@@ -41,3 +41,11 @@ player level cell OCTAL:
 ?11 BLUE
 0?? no star
 1?? star
+
+COMPRESSED LEVEL FORMAT:
+<width>,<height>,<player_x>,<player_y>,<player_direction>,<compressed level data>
+
+compressed level data format:
+S=<hex><data>|<data>|S
+<hex>=0..9|A..F
+<data>=G..N
