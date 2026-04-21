@@ -453,6 +453,11 @@ void Run_Input() {
         switch(key) {
         case 27: quit=true; break;
         case 9:
+            Board_Free(board1);
+            board1=Board_Copy(board0);
+            Board_Draw(board1);
+            code->ip=0;
+            code->fn=0;
             getmaxyx(stdscr,maxy,maxx);
             attron(COLOR_PAIR(1));
             move(maxy-1,0); printw("CODE"); clrtoeol();
