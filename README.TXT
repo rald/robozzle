@@ -14,6 +14,7 @@ b   on blue
 0-9 function call
 X   return
 
+ARROWS  move cursor
 TAB     switch CODE/RUN
 SPACE   if in RUN MODE step
 ESC     quit program
