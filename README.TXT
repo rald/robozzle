@@ -47,6 +47,6 @@ COMPRESSED LEVEL FORMAT:
 <width>,<height>,<player_x>,<player_y>,<player_direction>,<compressed level data>
 
 compressed level data format:
-S=<hex><data>|<data>|S
-<hex>=0..9|A..F
-<data>=G..N
+S:=<hex><data>S|<data>S|<empty>
+<hex>:=0..9|A..F
+<data>:=G..N
