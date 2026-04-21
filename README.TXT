@@ -1,5 +1,7 @@
 # robozzle
 
+goal collect all the stars *
+
 ^   forward
 <   turn left
 >   turn right
