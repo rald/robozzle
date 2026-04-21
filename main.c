@@ -578,8 +578,10 @@ void Run_Input() {
 
                 default: break;
                 }                
+            } else {
+                next();
             }
-        
+                    
             move(code->fn+code->y+1,code->ip+code->x+1);
 
             break;
